@@ -1,0 +1,163 @@
+{
+  "personal": {
+    "name": "Nagesh Bellary",
+    "title": "Technical Product Manager | AIoT · Connected Vehicles · SDV",
+    "email": "nageshbellary05@gmail.com",
+    "location": "Bengaluru, India",
+    "linkedin": "www.linkedin.com/in/nagesh-bellary-5681a550",
+    "github": "github.com/nageshbellary",
+    "avatar": "NB",
+    "calendly_url": "",
+    "summary": "Technical Product Manager with 5+ years owning AI-driven, IoT-enabled connected-vehicle products at Daimler Truck, backed by 9+ years in cloud architecture and software engineering. Proven record in product discovery, roadmap definition, backlog prioritization, and data-driven decision-making — delivering platforms spanning telematics, payments, and intelligent connected ecosystems with 95%+ on-time releases across cross-functional teams of 10–25+. Certified PSPO I; PMP in progress."
+  },
+  "experience": [
+    {
+      "title": "Technical Product Manager",
+      "company": "Daimler Truck Innovation Centre India",
+      "period": "Aug 2021 — Present",
+      "location": "Bengaluru, India",
+      "description": "Own product vision, strategy, and roadmap for AI-driven, IoT-enabled, and decentralized connected-vehicle products, balancing customer needs, business goals, and technical feasibility.",
+      "achievements": [
+        "Lead product discovery workshops with customers, business stakeholders, and architects; translate insights into PRDs, epics, and prioritized backlogs using data-driven frameworks",
+        "Delivered end-to-end integrations across telematics platforms, payment gateways, and fuel-station networks, achieving 95%+ on-time milestone delivery with teams of 10-25+ members",
+        "Partner with AI/ML teams to ship predictive analytics, intelligent automation, and GenAI / LLM-based capabilities into customer-facing product experiences",
+        "Improved delivery predictability by 30% through structured Agile governance and release planning",
+        "Reduced rework by ~20% by improving requirement clarity across global business and engineering stakeholders",
+        "Mitigated schedule slippages by ~25% through proactive risk tracking, dependency management, and escalation frameworks",
+        "Mentor product owners and engineers, driving a culture of AI adoption, experimentation, and continuous learning"
+      ]
+    },
+    {
+      "title": "Technical Architect",
+      "company": "AB InBev",
+      "period": "Jul 2019 — Jul 2021",
+      "location": "Bengaluru, India",
+      "description": "Shaped and delivered Azure cloud and data-engineering solutions powering business analytics and data-driven decision platforms.",
+      "achievements": [
+        "Partnered with business stakeholders to translate requirements into scalable solution architectures, defining scope, priorities, and implementation roadmaps",
+        "Established architecture standards and governance for scalability, performance, security, and reliability across cross-functional teams",
+        "Drove cloud modernization, automation, and DevOps initiatives, accelerating product delivery and improving system reliability"
+      ]
+    },
+    {
+      "title": "Software Engineer — QA & Test Automation Lead",
+      "company": "Electronics For Imaging (EFI)",
+      "period": "May 2014 — Jun 2019",
+      "location": "Bengaluru, India",
+      "description": "Led test automation and quality engineering across enterprise releases.",
+      "achievements": [
+        "Built Java / Selenium frameworks integrated with CI/CD, improving test efficiency and release velocity",
+        "Partnered with product owners and developers to validate requirements, define quality objectives, and ensure release readiness",
+        "Ran defect triage, testing schedules, and stakeholder quality reporting; mentored QA engineers across development and testing teams"
+      ]
+    },
+    {
+      "title": "Software Engineer",
+      "company": "Trignon Business Consulting",
+      "period": "Dec 2011 — May 2014",
+      "location": "Bengaluru, India",
+      "description": "Designed and built scalable backend applications, RESTful APIs, and microservices in Java and Python for distributed web and mobile platforms.",
+      "achievements": [
+        "Optimized relational and NoSQL databases and integrated third-party APIs and messaging systems for business-critical workflows"
+      ]
+    }
+  ],
+  "skills": {
+    "ai_ml": [
+      "AI/ML & Generative AI (LLMs)",
+      "RAG Architecture",
+      "Prompt Engineering",
+      "Ollama",
+      "IoT & Telematics",
+      "Software-Defined Vehicles (SDV)"
+    ],
+    "technical": [
+      "Java",
+      "Python",
+      "Azure Cloud",
+      "REST APIs & Microservices",
+      "Data Engineering",
+      "FastAPI",
+      "React"
+    ],
+    "product": [
+      "Product Strategy & Vision",
+      "Road mapping",
+      "Product Discovery",
+      "Customer & Stakeholder Interviews",
+      "PRDs, Epics & User Stories",
+      "Backlog Management",
+      "Prioritization (RICE, MoSCoW)",
+      "OKRs & Product KPIs",
+      "Go-to-Market Support",
+      "Agile / Scrum",
+      "Sprint & Release Planning",
+      "Risk & Dependency Management",
+      "Cross-Functional Leadership"
+    ],
+    "tools": [
+      "Jira",
+      "Confluence",
+      "Azure DevOps"
+    ]
+  },
+  "education": [
+    {
+      "degree": "Bachelor of Engineering — Electronics & Telecommunication",
+      "institution": "Mumbai University",
+      "year": "2010",
+      "grade": ""
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Professional Scrum Product Owner I (PSPO I)",
+      "issuer": "Scrum.org",
+      "year": ""
+    },
+    {
+      "name": "Project Management Professional (PMP) — in progress",
+      "issuer": "PMI",
+      "year": ""
+    },
+    {
+      "name": "Advanced Certification in Software Engineering for Cloud, Blockchain and IoT",
+      "issuer": "IIT Madras",
+      "year": "2024"
+    }
+  ],
+  "projects": [
+    {
+      "name": "Personal AI Recruiter Bot",
+      "description": "This bot — an AI-powered personal recruiter chatbot using a RAG architecture with Ollama for 100% local LLM inference. Recruiters interact with an AI that answers questions about Nagesh's profile via semantic retrieval, grounded in his real resume and profile data. Full C4 architecture documentation, FastAPI backend, React frontend.",
+      "tech": ["Python", "FastAPI", "Ollama", "ChromaDB", "React", "TailwindCSS"],
+      "impact": "AI portfolio showcase demonstrating RAG architecture, full-stack engineering, and production-grade system design"
+    },
+    {
+      "name": "Multi-Agent Product Council",
+      "description": "A simulated AI leadership council — six personas (Product Strategist, Engineering Lead, UX Lead, Data & Analytics Lead, Customer Voice, Security & Compliance) debate a product proposal across independent and cross-examination rounds, then a Moderator synthesizes a decision. Grounded in real project context via a persistent, uploadable knowledge base.",
+      "tech": ["Python", "FastAPI", "Ollama", "ChromaDB", "React", "TailwindCSS"],
+      "impact": "Demonstrates multi-agent orchestration and RAG-grounded decision support, built hand-rolled rather than on top of an agent framework"
+    },
+    {
+      "name": "Product Owner Brainer",
+      "description": "AI-assisted decision support tool for Product Owners, built with the help of an AI coding assistant to explore agentic workflows for sprint planning, backlog prioritization, and stakeholder communication.",
+      "tech": ["Python", "Ollama", "React", "FastAPI"],
+      "impact": "Part of a portfolio of AI showcase projects exploring practical GenAI product patterns"
+    }
+  ],
+  "achievements": [
+    "Improved delivery predictability by 30% through structured Agile governance and release planning at Daimler Truck",
+    "Achieved 95%+ on-time milestone delivery across cross-functional teams of 10-25+ members",
+    "Reduced requirement-related rework by ~20% across global business and engineering stakeholders",
+    "Mitigated schedule slippages by ~25% through proactive risk tracking and dependency management",
+    "Advanced Certification in Software Engineering for Cloud, Blockchain and IoT from IIT Madras (2024)"
+  ],
+  "interests": [
+    "Generative AI & LLM Applications",
+    "Connected Vehicles & Software-Defined Vehicles",
+    "AI Product Portfolio Building",
+    "Mentorship & Team Development"
+  ],
+  "availability": "Open to Technical Product Manager and AI-focused product leadership roles, particularly in connected vehicles, IoT, and GenAI product spaces."
+}

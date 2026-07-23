@@ -1,0 +1,47 @@
+@startuml C4_L2_Container
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+title [C4 — Level 2] Container Diagram\nPersonal AI Recruiter Bot
+
+skinparam defaultFontName Inter
+skinparam backgroundColor #0f172a
+skinparam titleFontColor #e2e8f0
+skinparam titleFontSize 14
+
+' ── External Actors & Systems ────────────────────────────────────────
+Person(recruiter, "Recruiter", "Hiring professional\nconducting candidate evaluation")
+
+System_Ext(ollama, "Ollama Server", "Docker container: ollama/ollama:latest\n──────────────────────────────────\nModels hosted:\n• llama3.2 (3B) — chat inference\n• nomic-embed-text — 768-dim embeddings\nExposes REST API on :11434")
+
+' ── System Boundary ──────────────────────────────────────────────────
+System_Boundary(system, "Personal AI Recruiter Bot   [Docker Network: recruiter-bot-net]") {
+
+    Container(frontend, "Web Frontend", "React 18 · Vite · TailwindCSS\nServed by Nginx (nginx:alpine)",
+        "Single-page application.\nProfile sidebar + real-time streaming chat.\nProxies /api/* requests to backend.\nConfigured for SSE: proxy_buffering off.")
+
+    Container(backend, "API Backend", "Python 3.11 · FastAPI · Uvicorn\n(python:3.11-slim)",
+        "REST API server.\nOrchestrates the full RAG pipeline:\n  1. Embed incoming query via Ollama\n  2. Retrieve top-K chunks from ChromaDB\n  3. Inject context into system prompt\n  4. Stream LLM tokens back via SSE")
+
+    ContainerDb(vectordb, "Vector Store", "ChromaDB\n(Persistent — Docker Volume: chroma_data)",
+        "Stores 768-dim cosine embeddings\nof chunked candidate profile sections.\nEnables ANN semantic search at query time.\nIndexed once on first startup.")
+
+    ContainerDb(profilestore, "Profile Store", "JSON flat-file\n(/app/data/profile.json)",
+        "Structured candidate profile:\n• Personal info & summary\n• 3 work experience entries\n• 4 featured projects\n• Skills (AI/ML, Technical, Product)\n• 4 certifications\n• Education & achievements")
+}
+
+' ── Relationships ────────────────────────────────────────────────────
+Rel(recruiter,   frontend,   "Opens browser, reads profile,\ntypes questions in chat",    "HTTPS :3000")
+
+Rel(frontend,    backend,    "GET /profile\n(fetch candidate data for sidebar)",           "HTTP JSON  :8000")
+Rel(frontend,    backend,    "POST /chat/stream\n(message + conversation history)",        "HTTP SSE   :8000")
+
+Rel(backend,     profilestore, "Reads JSON on startup,\nchunks into semantic segments",   "File I/O")
+Rel(backend,     ollama,     "POST /api/embeddings\n(encode profile chunks & query)",     "HTTP REST  :11434")
+Rel(backend,     vectordb,   "Stores embeddings on startup,\nretrieves top-K at query time", "Python SDK")
+Rel(backend,     ollama,     "POST /api/chat {stream:true}\n(stream response tokens)",    "HTTP REST  :11434")
+
+@enduml

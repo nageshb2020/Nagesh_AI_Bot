@@ -1,0 +1,71 @@
+@startuml C4_L5_Deployment
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+title [C4 — Deployment Diagram] Docker Compose Infrastructure\nPersonal AI Recruiter Bot
+
+skinparam defaultFontName Inter
+skinparam backgroundColor #0f172a
+skinparam titleFontColor #e2e8f0
+skinparam titleFontSize 14
+
+' ── Recruiter's Browser ──────────────────────────────────────────────
+Deployment_Node(browser, "Recruiter's Machine", "Any modern browser\n(Chrome · Firefox · Edge · Safari)") {
+    Container(spa, "React SPA",
+        "React 18 + TailwindCSS + Vite",
+        "Loaded once via HTTP.\nStreams SSE token responses.\nRenders profile sidebar and chat UI.")
+}
+
+' ── Host Machine ─────────────────────────────────────────────────────
+Deployment_Node(host, "Host Machine", "Windows 11 / macOS / Ubuntu\n(8GB+ RAM recommended)") {
+
+    Deployment_Node(docker, "Docker Engine", "Docker Desktop / Docker CE") {
+
+        Deployment_Node(net, "recruiter-bot-net   [bridge network]", "docker-compose.yml") {
+
+            ' Frontend container
+            Deployment_Node(fe_container, "recruiter-bot-frontend", "nginx:alpine\nPort mapping: 3000 → 80") {
+                Container(nginx, "Nginx",
+                    "nginx:alpine",
+                    "Serves compiled React SPA from /usr/share/nginx/html.\nReverse-proxies /api/* → backend:8000.\nSSE config: proxy_buffering off,\nchunked_transfer_encoding on,\nproxy_read_timeout 300s.")
+            }
+
+            ' Backend container
+            Deployment_Node(be_container, "recruiter-bot-backend", "python:3.11-slim\nPort mapping: 8000 → 8000") {
+                Container(fastapi, "FastAPI + Uvicorn",
+                    "Python 3.11",
+                    "RAG pipeline orchestration.\nAsync SSE endpoint for streaming.\nChromaDB Python SDK client.\nhttpx async client for Ollama.\nStartup: profile load → embed → index.")
+            }
+
+            ' Ollama container
+            Deployment_Node(ol_container, "recruiter-bot-ollama", "ollama/ollama:latest\nPort mapping: 11434 → 11434") {
+                Container(ollama, "Ollama Server",
+                    "ollama/ollama:latest",
+                    "Serves REST API for inference.\nModels loaded on first pull:\n• llama3.2 (3B params, ~2.0 GB)\n• nomic-embed-text (~274 MB)\nGPU-accelerated if CUDA/Metal available.")
+            }
+        }
+
+        ' Named Volumes
+        Deployment_Node(volumes, "Named Volumes   [persistent storage]", "docker volume ls") {
+            ContainerDb(ollama_vol, "ollama_data",
+                "Docker Volume → /root/.ollama",
+                "LLM model weights.\nPersists across container restarts.\nTotal size ~2.3 GB after model pull.")
+
+            ContainerDb(chroma_vol, "chroma_data",
+                "Docker Volume → /app/chroma_db",
+                "ChromaDB index — HNSW cosine graph\nof profile chunk embeddings (768-dim).\nPersists: no re-indexing on restart.")
+        }
+    }
+}
+
+' ── Relationships ────────────────────────────────────────────────────
+Rel(spa,      nginx,      "HTTP :3000",        "Page load + API calls")
+Rel(nginx,    fastapi,    "HTTP :8000",        "/api/* proxied, SSE preserved")
+Rel(fastapi,  ollama,     "HTTP :11434",       "embed() + stream_chat()")
+Rel(fastapi,  chroma_vol, "R/W",               "ChromaDB SDK mounts /app/chroma_db")
+Rel(ollama,   ollama_vol, "R/W",               "Model weights at /root/.ollama")
+
+@enduml

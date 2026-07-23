@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: nagesh-recruiter-bot-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: CHAT_PROVIDER
+        value: groq
+      - key: GROQ_MODEL
+        value: llama-3.2-8b-8192
+      - key: GROQ_API_KEY
+        sync: false          # Render will prompt you to enter this secret manually
+      - key: CANDIDATE_NAME
+        value: Nagesh Bellary
+      - key: DATA_DIR
+        value: ./data
+      - key: PROFILE_PATH
+        value: ./data/profile.json
+      - key: ADMIN_TOKEN
+        sync: false          # Render will prompt you to enter this secret manually — protects /upload/resume

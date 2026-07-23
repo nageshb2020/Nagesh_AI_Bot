@@ -1,0 +1,58 @@
+@startuml C4_L3_Component_Backend
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_LEFT_RIGHT()
+
+title [C4 — Level 3] Component Diagram\nAPI Backend (FastAPI)
+
+skinparam defaultFontName Inter
+skinparam backgroundColor #0f172a
+skinparam titleFontColor #e2e8f0
+skinparam titleFontSize 14
+
+' ── External containers & systems ────────────────────────────────────
+Container_Ext(frontend,   "Web Frontend",  "React SPA",
+    "Sends chat messages with conversation\nhistory. Renders streamed SSE tokens.")
+
+ContainerDb_Ext(vectordb, "ChromaDB",      "Vector Store",
+    "Cosine ANN index of profile embeddings.\nPersists across container restarts.")
+
+System_Ext(ollama,        "Ollama",        "LLM Runtime — HTTP :11434",
+    "llama3.2 for chat completions.\nnomic-embed-text for 768-dim embeddings.")
+
+' ── Backend Component Boundary ───────────────────────────────────────
+Container_Boundary(backend, "API Backend — FastAPI Application") {
+
+    Component(router, "API Router", "FastAPI · Uvicorn · CORS Middleware",
+        "Entry point for all HTTP traffic.\nEndpoints:\n  GET  /health   — system status\n  GET  /profile  — candidate profile JSON\n  POST /chat/stream — SSE streaming chat\nManages app lifespan (startup indexing).")
+
+    Component(rag, "RAG Service", "Python class\n(services/rag_service.py)",
+        "Core pipeline orchestrator:\n  1. Call EmbeddingService.retrieve(query)\n  2. Call PromptBuilder.build(context, history)\n  3. Yield tokens from OllamaService.stream_chat()\nKeeps last 8 history messages in context.")
+
+    Component(prompt, "Prompt Builder", "Python module\n(inline in rag_service.py)",
+        "Builds a persona-locked system prompt.\nInjects retrieved chunks as grounding context.\nInstructs LLM to refer to candidate in 3rd person.\nPrevents hallucination — unknown facts → redirect.")
+
+    Component(embed, "Embedding Service", "Python class\n(services/embedding_service.py)",
+        "Lifecycle:\n  Startup → chunk profile → embed via Ollama\n            → store in ChromaDB (skip if exists)\n  Query   → embed query → ANN search\n            → return top-4 matching text chunks\nUses cosine distance metric.")
+
+    Component(ollama_svc, "Ollama Service", "Python class · httpx async\n(services/ollama_service.py)",
+        "Async HTTP client for Ollama REST API.\n  embed(text) → float[768]\n  stream_chat(msgs) → AsyncIterator[str]\n  health_check() → bool\nRetries Ollama readiness 30× on startup.")
+
+    Component(profile_svc, "Profile Service", "Python class\n(services/profile_service.py)",
+        "Reads profile.json into memory on startup.\nChunks profile into 7 semantic segments:\n  • Summary + availability\n  • Experience × 3 (one per role)\n  • Skills (AI/ML + Technical + Product)\n  • Projects × 4\n  • Education + Certifications\n  • Achievements")
+}
+
+' ── Relationships ────────────────────────────────────────────────────
+Rel(frontend,    router,      "POST /chat/stream",               "HTTP / SSE")
+Rel(router,      rag,         "rag.stream(query, history)",      "async generator")
+Rel(rag,         embed,       "embed.retrieve(query, n=4)",      "awaited coroutine")
+Rel(rag,         prompt,      "SYSTEM_PROMPT.format(context)",   "string interpolation")
+Rel(rag,         ollama_svc,  "ollama.stream_chat(messages)",    "async generator")
+Rel(embed,       vectordb,    "collection.query(embedding)",     "Python SDK / cosine ANN")
+Rel(embed,       ollama_svc,  "ollama.embed(chunk_text)",        "awaited coroutine")
+Rel(profile_svc, embed,       "embed.index(chunks) at startup",  "awaited coroutine")
+Rel(router,      profile_svc, "profile_svc.load() at startup",   "lifespan hook")
+
+@enduml

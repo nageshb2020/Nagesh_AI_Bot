@@ -1,0 +1,32 @@
+@startuml C4_L1_SystemContext
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+title [C4 — Level 1] System Context Diagram\nPersonal AI Recruiter Bot
+
+skinparam defaultFontName Inter
+skinparam backgroundColor #0f172a
+skinparam titleFontColor #e2e8f0
+skinparam titleFontSize 14
+skinparam legendBackgroundColor #1e293b
+skinparam legendBorderColor #334155
+
+' ── Actors ──────────────────────────────────────────────────────────
+Person(recruiter, "Recruiter / HR Manager", "Talent acquisition professional\nevaluating candidates for an open role.\nVisits the bot URL and chats in natural language.")
+
+Person(candidate, "Nagesh Bellary\n(The Candidate)", "Senior Product Owner & AI Architect.\nOwns, configures, and deploys the bot\nto represent his professional profile.")
+
+' ── Systems ─────────────────────────────────────────────────────────
+System(bot, "Personal AI Recruiter Bot", "AI-powered conversational interface.\nAllows recruiters to ask anything about\nthe candidate's experience, skills, projects,\nand career goals via natural language chat.")
+
+System_Ext(ollama, "Ollama Runtime", "Locally hosted open-source LLM service.\nRuns llama3.2 for conversational inference\nand nomic-embed-text for vector embeddings.\n100% private — zero cloud API calls.")
+
+' ── Relationships ────────────────────────────────────────────────────
+Rel(recruiter, bot,       "Asks questions about the candidate",           "HTTPS / Browser")
+Rel(candidate, bot,       "Configures profile.json, deploys bot",          "Docker Compose / CLI")
+Rel(bot,       ollama,    "Sends prompts, receives streamed tokens\nand vector embeddings", "HTTP REST :11434")
+
+@enduml

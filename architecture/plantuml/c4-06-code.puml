@@ -1,0 +1,134 @@
+@startuml C4_L4_Code_ClassDiagram
+
+title [C4 — Level 4] Code Diagram\nKey Service Classes — Personal AI Recruiter Bot
+
+skinparam defaultFontName Inter
+skinparam backgroundColor #0f172a
+skinparam titleFontColor #e2e8f0
+skinparam titleFontSize 14
+skinparam classAttributeIconSize 0
+skinparam roundCorner 8
+skinparam shadowing false
+skinparam linetype ortho
+
+skinparam class {
+    BackgroundColor        #1e293b
+    BorderColor            #6366f1
+    ArrowColor             #818cf8
+    FontColor              #e2e8f0
+    FontSize               11
+    HeaderBackgroundColor  #312e81
+    HeaderFontColor        #e2e8f0
+    HeaderFontSize         12
+    StereotypeFontColor    #a5b4fc
+}
+
+skinparam note {
+    BackgroundColor #0f172a
+    BorderColor     #475569
+    FontColor       #94a3b8
+    FontSize        10
+}
+
+' ── Config ───────────────────────────────────────────────────────────
+class Settings <<pydantic BaseSettings>> {
+    + ollama_base_url : str
+    + chat_model : str
+    + embed_model : str
+    + chroma_path : str
+    + profile_path : str
+    + candidate_name : str
+    --
+    {static} model_config : dict
+}
+
+' ── Services ─────────────────────────────────────────────────────────
+class OllamaService {
+    - base_url : str
+    - chat_model : str
+    - embed_model : str
+    ==
+    + embed(text: str) : Coroutine[list[float]]
+    + stream_chat(messages: list[dict]) : AsyncIterator[str]
+    + health_check() : Coroutine[bool]
+}
+
+class ProfileService {
+    - _profile : dict
+    ==
+    + load() : None
+    + get_profile() : dict
+    + get_chunks() : list[dict]
+    - _chunk_experience(exp: dict, idx: int) : dict
+    - _chunk_skills(skills: dict) : dict
+    - _chunk_projects(projects: list) : list[dict]
+}
+
+class EmbeddingService {
+    - client : chromadb.PersistentClient
+    - collection : chromadb.Collection
+    - ollama : OllamaService
+    ==
+    + index(chunks: list[dict]) : Coroutine[None]
+    + retrieve(query: str, n: int) : Coroutine[list[str]]
+    + reset_index() : None
+    - _already_indexed() : bool
+}
+
+class RAGService {
+    - embedding_service : EmbeddingService
+    - ollama : OllamaService
+    ==
+    + stream(query: str, history: list[dict]) : AsyncIterator[str]
+    - _build_messages(context: str, query: str, history: list) : list[dict]
+}
+
+' ── FastAPI App ──────────────────────────────────────────────────────
+class FastAPIApp <<FastAPI>> {
+    + lifespan(app) : AsyncContextManager
+    + health() : dict
+    + get_profile() : dict
+    + chat_stream(request: ChatRequest) : StreamingResponse
+}
+
+class ChatRequest <<Pydantic BaseModel>> {
+    + message : str
+    + history : list[dict]
+}
+
+' ── Relationships ────────────────────────────────────────────────────
+RAGService       "1" --> "1"  EmbeddingService : "retrieves context\nchunks from"
+RAGService       "1" --> "1"  OllamaService    : "streams chat\ncompletion from"
+EmbeddingService "1" --> "1"  OllamaService    : "generates vector\nembeddings via"
+ProfileService        ..>      EmbeddingService : "indexes chunks\ninto at startup"
+FastAPIApp       "1" --> "1"  RAGService       : "delegates chat\nstreaming to"
+FastAPIApp       "1" --> "1"  ProfileService   : "loads profile\nand serves JSON"
+FastAPIApp       "1" --> "1"  EmbeddingService : "triggers index\non startup"
+OllamaService         ..>      Settings         : "reads model names\nand base URL from"
+EmbeddingService      ..>      Settings         : "reads chroma_path\nfrom"
+ProfileService        ..>      Settings         : "reads profile_path\nfrom"
+
+' ── Notes ────────────────────────────────────────────────────────────
+note right of RAGService
+  Core orchestrator.
+  Stateless per request.
+  Retrieves relevant context chunks,
+  injects into persona-locked prompt,
+  streams tokens back to the SSE client.
+end note
+
+note right of EmbeddingService
+  Idempotent indexing:
+  checks collection.count() > 0
+  before embedding — safe to restart
+  container without re-indexing.
+end note
+
+note bottom of OllamaService
+  All methods are async (httpx.AsyncClient).
+  embed() → POST /api/embeddings
+  stream_chat() → streaming POST /api/chat
+  Timeouts: embed 60s, chat 180s.
+end note
+
+@enduml

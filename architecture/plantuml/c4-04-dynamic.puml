@@ -1,0 +1,70 @@
+@startuml C4_L4_Dynamic_RAGFlow
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Dynamic.puml
+
+LAYOUT_WITH_LEGEND()
+
+title [C4 — Dynamic Diagram] RAG Query Flow\nPersonal AI Recruiter Bot — Step-by-step interaction
+
+skinparam defaultFontName Inter
+skinparam backgroundColor #0f172a
+skinparam titleFontColor #e2e8f0
+skinparam titleFontSize 14
+skinparam sequenceArrowColor #818cf8
+skinparam sequenceArrowFontColor #94a3b8
+skinparam sequenceLifeLineBorderColor #334155
+skinparam sequenceParticipantBorderColor #6366f1
+skinparam sequenceParticipantBackgroundColor #1e293b
+skinparam sequenceParticipantFontColor #e2e8f0
+skinparam noteBorderColor #6366f1
+skinparam noteBackgroundColor #312e81
+skinparam noteFontColor #e2e8f0
+
+' ── Participants ─────────────────────────────────────────────────────
+Person(recruiter,  "Recruiter")
+Container(frontend,  "Web Frontend",  "React + SSE")
+Container(backend,   "API Backend",   "FastAPI")
+ContainerDb(chromadb,"ChromaDB",      "Vector Store")
+System_Ext(ollama,   "Ollama",        "LLM Runtime")
+
+' ── Startup Phase (runs once) ────────────────────────────────────────
+note over backend, ollama
+  <b>STARTUP PHASE</b> — runs once when backend container starts
+  (steps 0a – 0d happen before any recruiter query is served)
+end note
+
+Rel(backend,  backend,   "0a", "ProfileService.load()\nRead profile.json → 7 semantic chunks")
+Rel(backend,  ollama,    "0b", "POST /api/embeddings\n{model: nomic-embed-text, prompt: chunk_text}\n× 7 chunks")
+Rel(ollama,   backend,   "0c", "Returns embedding float[768] per chunk")
+Rel(backend,  chromadb,  "0d", "collection.add(documents, embeddings, ids)\nStore all 7 chunks — skip if already indexed")
+
+' ── Query Phase ──────────────────────────────────────────────────────
+note over recruiter, ollama
+  <b>QUERY PHASE</b> — every recruiter message triggers steps 1 – 11
+end note
+
+Rel(recruiter, frontend,  "1",  "Types: \"What AI products has Nagesh shipped?\"")
+Rel(frontend,  backend,   "2",  "POST /chat/stream\n{message: \"...\", history: [...last 8 msgs]}")
+Rel(backend,   ollama,    "3",  "POST /api/embeddings\n{model: nomic-embed-text, prompt: query}")
+Rel(ollama,    backend,   "4",  "Returns query_embedding float[768]")
+Rel(backend,   chromadb,  "5",  "collection.query(query_embedding, n_results=4)\nCosine similarity ANN search")
+Rel(chromadb,  backend,   "6",  "Returns top-4 relevant profile text chunks\n(e.g. projects, experience sections)")
+
+note right of backend
+  <b>Step 7 — Prompt Assembly</b>
+  System prompt = PERSONA + retrieved chunks
+  Messages = [system] + [history] + [user query]
+  Context is grounded in profile facts only
+end note
+
+Rel(backend,   ollama,    "8",  "POST /api/chat\n{model: llama3.2, messages: [...], stream: true}")
+
+loop token stream (repeated ~50-200 times per response)
+  Rel(ollama,  backend,   "9",  "{\"message\":{\"content\":\"token\"}, \"done\":false}")
+  Rel(backend, frontend,  "10", "data: {\"content\":\"token\"}\\n\\n  [SSE frame]")
+  Rel(frontend,recruiter, "11", "Append token to chat bubble in real-time")
+end
+
+Rel(backend,   frontend,  "12", "data: [DONE]\\n\\n  [SSE stream closed]")
+
+@enduml

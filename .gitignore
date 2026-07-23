@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+*.egg-info/
+chroma_db/
+
+# Environment files — never commit real keys
+.env
+cloud-deploy/backend/.env
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Resume uploads (contain personal data)
+backend/data/resume.*
+cloud-deploy/backend/data/resume.*
