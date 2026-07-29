@@ -88,6 +88,7 @@ async def health():
 
 
 @app.get("/status")
+@app.get("/api/status")
 async def status():
     resume = _find_resume()
     return {
@@ -98,6 +99,7 @@ async def status():
 
 
 @app.get("/profile")
+@app.get("/api/profile")
 async def get_profile():
     p = profile_service.get_profile()
     if not p:
@@ -106,6 +108,7 @@ async def get_profile():
 
 
 @app.post("/upload/resume", dependencies=[Depends(require_admin)])
+@app.post("/api/upload/resume", dependencies=[Depends(require_admin)])
 async def upload_resume(file: UploadFile = File(...)):
     suffix = Path(file.filename).suffix.lower()
     if suffix not in _ALLOWED_EXTS:
@@ -134,6 +137,7 @@ async def upload_resume(file: UploadFile = File(...)):
 
 
 @app.delete("/upload/resume", dependencies=[Depends(require_admin)])
+@app.delete("/api/upload/resume", dependencies=[Depends(require_admin)])
 async def delete_resume():
     for ext in _ALLOWED_EXTS:
         f = Path(settings.data_dir) / f"resume{ext}"
@@ -146,6 +150,7 @@ async def delete_resume():
 
 
 @app.post("/chat/stream")
+@app.post("/api/chat/stream")
 async def chat_stream(request: ChatRequest):
     if not request.message.strip():
         raise HTTPException(400, "Message cannot be empty")

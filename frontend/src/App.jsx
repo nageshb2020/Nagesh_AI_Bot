@@ -16,12 +16,12 @@ export default function App() {
 
   useEffect(() => {
     fetch(`${API_BASE}/api/profile`)
-      .then(r => r.json())
-      .then(setProfile)
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then(p => { if (p?.personal) setProfile(p) })
       .catch(console.error)
 
     fetch(`${API_BASE}/api/video/status`)
-      .then(r => r.json())
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then(d => setVideoExists(!!d.exists))
       .catch(() => {})
   }, [])

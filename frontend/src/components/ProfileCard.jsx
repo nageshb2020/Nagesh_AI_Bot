@@ -37,7 +37,7 @@ export default function ProfileCard({ profile, videoExists, onOpenVideo }) {
       .catch(() => {})
   }, [])
 
-  if (!profile) return <Skeleton />
+  if (!profile?.personal) return <Skeleton />
 
   const { personal, skills, experience, certifications, achievements } = profile
 
