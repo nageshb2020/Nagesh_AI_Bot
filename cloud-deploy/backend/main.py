@@ -158,9 +158,9 @@ async def chat_stream(request: ChatRequest):
     async def stream():
         try:
             async for token in rag_service.stream(request.message, request.history):
-                yield f"data: {json.dumps({'content': token})}\n\n"
+                yield f"data: {json.dumps({'type': 'token', 'content': token})}\n\n"
         except Exception as e:
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            yield f"data: {json.dumps({'type': 'error', 'error': str(e)})}\n\n"
         finally:
             yield "data: [DONE]\n\n"
 
