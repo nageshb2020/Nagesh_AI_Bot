@@ -20,7 +20,7 @@ class Settings(BaseSettings):
 
     # Groq (used when chat_provider=groq)
     groq_api_key: str = ""
-    groq_model: str = "llama-3.2-8b-8192"
+    groq_model: str = "llama-3.1-8b-instant"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

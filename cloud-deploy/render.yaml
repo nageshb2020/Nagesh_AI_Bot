@@ -10,7 +10,7 @@ services:
       - key: CHAT_PROVIDER
         value: groq
       - key: GROQ_MODEL
-        value: llama-3.2-8b-8192
+        value: llama-3.1-8b-instant
       - key: GROQ_API_KEY
         sync: false          # Render will prompt you to enter this secret manually
       - key: CANDIDATE_NAME
